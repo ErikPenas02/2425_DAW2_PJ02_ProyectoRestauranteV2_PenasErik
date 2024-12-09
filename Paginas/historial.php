@@ -4,7 +4,7 @@
     session_start();
 
     // Check if the user is logged in
-    if (!isset($_SESSION["camareroID"])) {
+    if (!isset($_SESSION["usuarioAct"])) {
         header('Location: ../index.php?error=nosesion');
         exit();
     }
@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="../CSS/estilos-historial.css">
 </head>
 <body>
-    <a href="salas.php"><button class="back">Volver a salas</button></a>
+    <a href="inicio.php"><button class="back">Volver a salas</button></a>
 
     <h2>Selecciona una Sala y Mesa para ver el Historial</h2>
 

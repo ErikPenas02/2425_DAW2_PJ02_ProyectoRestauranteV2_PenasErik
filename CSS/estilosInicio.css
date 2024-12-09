@@ -1,0 +1,58 @@
+/* Hoja de estilos para las salas */
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(220, 213, 194);
+}
+
+a {
+    text-decoration: none;
+}
+
+.opciones {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 20px;
+    padding: 20px;
+}
+.opcion {
+    border: 2px solid black;
+    border-radius: 10px;
+    background-size: cover;  /* La imagen cubrirá todo el div */
+    background-position: center; /* Centra la imagen */
+    width: 250px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+#opcionSalas{
+    background-image: url("img/imgSalas.png");
+}
+
+#opcionUsers{
+    background-image: url("img/imgUsers.png");
+}
+
+#opcionRecursos{
+    background-image: url("img/imgRecursos.png");
+}
+
+.opcion:hover {
+    transform: scale(1.05);
+    border-color: #007bff;
+}
+
+.opcion span {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    color: rgb(254, 214, 83);
+}

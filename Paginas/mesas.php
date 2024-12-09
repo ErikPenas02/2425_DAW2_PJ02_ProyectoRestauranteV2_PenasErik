@@ -8,18 +8,18 @@
 </head>
 <body>
 
-    <a href="salas.php"><button class="back">Volver a salas</button></a>
+    <a href="inicio.php"><button class="back">Volver a salas</button></a>
     <div class="contenedor">       
         <?php
             require_once "../Procesos/conection.php";
             session_start();
 
             // Comprobación de sesión activa
-            if (!isset($_SESSION["camareroID"])) {
+            if (!isset($_SESSION["usuarioAct"])) {
                 header('Location: ../index.php');
                 exit();
             } else {
-                $id_user = $_SESSION["camareroID"];
+                $id_user = $_SESSION["usuarioAct"];
                 // sesion de sala
                     if (isset($_POST['sala'])){
                     $_SESSION['sala'] = $_POST['sala'];
