@@ -18,26 +18,15 @@
             if (!isset($_SESSION["usuarioAct"])) {
                 header('Location: ../index.php');
                 exit();
-            } else {
-                $id_user = $_SESSION["usuarioAct"];
-                // sesion de sala
-                    if (isset($_POST['sala'])){
-                    $_SESSION['sala'] = $_POST['sala'];
-                    }
             }
 
-            // Verificar si se ha enviado el nombre de la sala
-            if (isset($_SESSION['sala'])) {
-                $nombre_sala = $_SESSION['sala']; 
+            
+            if (isset($_GET['id_sala'])) {
+                $id_sala = $_GET['sala']; 
             
                 // Sanitizar el nombre de la sala
-                $nombre_sala = htmlspecialchars($nombre_sala);
-            
-                // Consultar ID de la sala basada en el nombre
-                $stmt = $conn->prepare("SELECT id_salas FROM tbl_salas WHERE name_sala = ?");
-                $stmt->bind_param("s", $nombre_sala);
-                $stmt->execute();
-                $resultado = $stmt->get_result();
+                $id_sala = htmlspecialchars($nombre_sala);
+                
             
                 // Obtener el ID de la sala
                 if ($fila = $resultado->fetch_assoc()) {
