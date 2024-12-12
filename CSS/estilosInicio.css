@@ -81,7 +81,7 @@ a {
     white-space: nowrap; /* Evita que el texto se parta en varias líneas */
     overflow: hidden;    /* Oculta el texto que exceda el tamaño del contenedor */
     text-overflow: ellipsis; /* Agrega "..." si el texto es demasiado largo */
-    font-size: 1.2rem;   /* Ajusta el tamaño de la fuente */
+    font-size: 1.2rem;
     
 }
 .sala-card:hover {
@@ -89,3 +89,32 @@ a {
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
 }
+/* Estilos Mesas.php */
+
+.mesa-card {
+    background-color: rgba(137, 62, 0, 0.7);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    color: white;
+    border-radius: 10px;
+    width: 250px;
+    text-align: center;
+    padding: 15px;
+    transition: transform 0.3s ease, background-color 0.5 ease, box-shadow 0.5s ease;
+}
+
+.mesa-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.8);
+    background-color: rgba(137, 62, 0, 1.4)
+}
+
+.mesa-card .asignada {
+    color: red;
+    font-weight: bold;
+}
+
+.mesa-card .libre {
+    color: green;
+    font-weight: bold;
+}
+

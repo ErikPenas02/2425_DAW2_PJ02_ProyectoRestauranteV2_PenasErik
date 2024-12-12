@@ -1,141 +1,105 @@
+<?php
+    require_once "../Procesos/conection.php";
+    session_start();
+
+    // Comprobación de sesión activa
+    if (!isset($_SESSION["usuarioAct"])) {
+        header('Location: ../index.php');
+        exit();
+    }
+
+    
+    if (isset($_GET['id_sala'])) {
+        $id_sala = $_GET['id_sala']; 
+    
+        // Sanitizar el nombre de la sala
+        $id_sala = htmlspecialchars($id_sala);
+
+        //Para facilitar la obtención del nombre de la Sala, haré 2 consultas
+        try {
+            // Consultar las mesas de la sala seleccionada
+            $sqlMesas = "SELECT id_recurso, nombre_recurso FROM tbl_recursos WHERE id_sala = :id_sala
+                         AND id_padre IS NULL";
+            $stmt = $pdo->prepare($sqlMesas);
+            $stmt->bindParam(':id_sala', $id_sala);
+            $stmt->execute();
+            $mesas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $sqlSillas = "SELECT id_recurso, nombre_recurso FROM tbl_recursos WHERE id_padre = :id_padre";
+            $sqlNombreSala = "SELECT nombre_sala FROM tbl_salas WHERE id_sala = :id_sala";
+            $stmt2 = $pdo->prepare($sqlNombreSala);
+            $stmt2->bindParam(':id_sala', $id_sala);
+            $stmt2->execute();
+            $n_sala = $stmt2->fetch(PDO::FETCH_ASSOC);
+
+            // Obtener la fecha y hora actual
+            $ahora = date("Y-m-d H:i:s");
+        
+        } catch (PDOException $e) {
+            echo "Error al cargar las mesas: " . $e->getMessage();
+            die();
+        }
+    }  
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mesas de la Sala</title>
-    <link rel="stylesheet" href="../CSS/estilos-mesas.css">
+    <title><?php echo $n_sala["nombre_sala"]; ?></title>
+    <link rel="stylesheet" href="../CSS/estilosInicio.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 <body>
-
-    <a href="inicio.php"><button class="back">Volver a salas</button></a>
-    <div class="contenedor">       
+    <!-- Navbar ya implementado -->
+    <header class="p-2 bg-dark text-white">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="" class="nav-link px-2 text-secondary">Home</a></li>
+                    <li><a href="./historial.php" class="nav-link px-2 text-white">Historial</a></li>
+                </ul>
+                <div class="text-end">
+                    <a href="./salas.php"><button type="button" class="btn btn-outline-danger">Volver a Salas</button></a>
+                    <a href="../Procesos/destruir.php"><button type="button" class="btn btn-outline-danger">Log Out</button></a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="container mt-4">
+    <div class="row">
+        <h2>Mesas en <?php echo htmlspecialchars($n_sala["nombre_sala"]); ?></h2>
         <?php
-            require_once "../Procesos/conection.php";
-            session_start();
+        if (count($mesas) > 0) {
+            foreach ($mesas as $mesa) {
+                // Verificar si la mesa está asignada
+                $sqlSillas = "SELECT COUNT(*) FROM tbl_recursos WHERE id_padre = :id_padre";
+                $stmt3 = $pdo->prepare($sqlSillas);
+                $stmt3->bindParam(':id_padre', $mesa["id_recurso"]);
+                $stmt3->execute();
+                $sillas = $stmt3->fetchColumn();
 
-            // Comprobación de sesión activa
-            if (!isset($_SESSION["usuarioAct"])) {
-                header('Location: ../index.php');
-                exit();
+                $sqlAsignada = "SELECT COUNT(*) FROM tbl_historial WHERE id_recurso = :id_recurso 
+                                AND :ahora BETWEEN fecha_asignacion AND fecha_no_asignacion";
+                $stmtAsignada = $pdo->prepare($sqlAsignada);
+                $stmtAsignada->bindParam(':id_recurso', $mesa['id_recurso']);
+                $stmtAsignada->bindParam(':ahora', $ahora);
+                $stmtAsignada->execute();
+                $asignada = $stmtAsignada->fetchColumn() > 0;
+
+                echo "<div class='col-12 col-sm-6 col-md-4 col-lg-3 mb-4'>
+                <div class='mesa-card'>
+                    <h3>" . htmlspecialchars($mesa['nombre_recurso']) . "</h3>
+                    <p>Asientos: " . $sillas . "</p>" . ($asignada ? "<span class='asignada'>Asignada</span>" : "<span class='libre'>Libre</span>") . "</button></a></p>
+                    <a href='./asignar_mesa.php?id_mesa=" . $mesa['id_recurso'] . "'><button type='button' class='btn btn-warning'>Reservar</button></a></p>
+                </div>
+                </div>";
             }
-
-            
-            if (isset($_GET['id_sala'])) {
-                $id_sala = $_GET['sala']; 
-            
-                // Sanitizar el nombre de la sala
-                $id_sala = htmlspecialchars($nombre_sala);
-                
-            
-                // Obtener el ID de la sala
-                if ($fila = $resultado->fetch_assoc()) {
-                    $id_sala = $fila['id_salas'];
-                
-                    // Consultar las mesas en esa sala
-                    $stmt_mesas = $conn->prepare("
-                    SELECT m.id_mesa, m.n_asientos, 
-                    CASE
-                        WHEN h.fecha_NA IS NULL AND h.id_mesa IS NOT NULL THEN 'Asignada'
-                        ELSE 'No Asignada'
-                    END AS estado_mesa
-                    FROM tbl_mesas m
-                    LEFT JOIN tbl_historial h ON m.id_mesa = h.id_mesa AND h.fecha_NA IS NULL
-                    WHERE m.id_sala = ?
-                    "); 
-                    $stmt_mesas->bind_param("i", $id_sala);
-                    $stmt_mesas->execute();
-                    $resultado_mesas = $stmt_mesas->get_result();
-                
-                
-                    // Mostrar mesas como botones
-                    echo "<h2>Mesas en: $nombre_sala</h2>";
-                    echo "<form action='./asignar_mesa.php' method='POST'>";
-                    switch ($_SESSION["sala"]) {
-                    case 'Terraza_1':
-                    
-                        echo "<div class='terrazafoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/Terraza1.png" alt="" id="terrazafoto">';
-                        echo "</div>";
-                        break;
-                    case 'Terraza_2':
-                        echo "<div class='terrazafoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/Terraza2.png" alt="" id="terrazafoto">';
-                        echo "</div>";
-                        break;
-                    case 'Jardin':
-                        echo "<div class='jardinfoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/jardin.png" alt="" id="jardinfoto">';
-                        echo "</div>";
-                        break;
-                    case 'Comedor_1':
-                        echo "<div class='comedorfoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/comedor1.png" alt="" id="comedorfoto">';
-                        echo "</div>";
-                        break;
-                    case 'Comedor_2':
-                        echo "<div class='comedorfoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/comedor2.png" alt="" id="comedorfoto">';
-                        echo "</div>";
-                        break;
-                    case 'Salon_VIP':
-                        echo "<div class='reservaofoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/salon_vip.png" alt="" id="reservaofoto">';
-                        echo "</div>";
-                        break;
-                    case 'Salon_VIP_2':
-                        echo "<div class='reservaofoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/salon_vip_2.png" alt="" id="reservaofoto">';
-                        echo "</div>";
-                        break;
-                    case 'Salon_romantico':
-                        echo "<div class='reservaofoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/romantica.png" alt="" id="reservaofoto">';
-                        echo "</div>";
-                        break;
-                    case 'Naturaleza':
-                        echo "<div class='reservaofoto'>";
-                        echo '<img src="../CSS/img/salas + mesas/naturaleza.png" alt="" id="reservaofoto">';
-                        echo "</div>";
-                        break;
-                    default:
-                        echo "<p>Sala no encontrada.</p>";
-                        break;
-                    }
-
-                    if ($resultado_mesas->num_rows > 0) {
-                        while ($mesa = $resultado_mesas->fetch_assoc()) {
-                            $id_mesa = htmlspecialchars($mesa['id_mesa']);
-                            $n_asientos = htmlspecialchars($mesa['n_asientos']);
-                            $estado_mesa = htmlspecialchars($mesa['estado_mesa']);
-
-                            // Clase del botón según el estado de la mesa
-                            $boton_clase = ($estado_mesa === 'Asignada') ? 'btn-rojo' : 'btn-verde';
-
-                            // Botón para cada mesa
-                            echo "<button type='submit' id='btn_$id_mesa' name='mesa' value='$id_mesa' class='$boton_clase'>Mesa $id_mesa (Asientos: $n_asientos)</button>";
-                        }
-                    } else {
-                        echo "<p>No hay mesas disponibles en esta sala.</p>";
-                    }
-                
-                    echo "</form>"; // Cerrar formulario
-                
-                    // Cerrar declaración de mesas
-                    $stmt_mesas->close();
-                } else {
-                    echo "<p>No se encontró la sala especificada.</p>";
-                }
-            
-                // Cerrar declaración de sala
-                $stmt->close();
-            } else {
-                echo "<p>No se ha seleccionado ninguna sala.</p>";
-            }
-
-            // Cerrar conexión
-            $conn->close();
+        } else {
+            echo "<p>No hay mesas registradas en esta sala.</p>";
+        }
         ?>
+    </div>
     </div>
 </body>
 </html>

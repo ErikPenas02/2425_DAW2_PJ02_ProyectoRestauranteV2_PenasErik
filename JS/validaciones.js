@@ -85,3 +85,126 @@ document.addEventListener("DOMContentLoaded", function () {
         } 
     });
 });
+
+// Función para mostrar alertas de éxito
+function Exito(t, md) {
+    Swal.fire({
+        title: t,
+        text: md,
+        icon: 'success',
+        confirmButtonText: 'Aceptar'
+    }).then(() => window.location.href = "../Paginas/mesas.php");
+}
+
+// Función para mostrar alertas de error
+function mostrarError(md) {
+    Swal.fire({
+        title: "¡Error!",
+        text: md,
+        icon: 'error',
+        confirmButtonText: 'Aceptar'
+    }).then(() => window.location.href = "../Paginas/asignar_mesa.php");
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("form-asignar");
+
+    // Campos del formulario
+    const assignedToInput = document.getElementById("assigned_to");
+    const fechaInicioInput = document.getElementById("fecha_inicio");
+    const fechaFinInput = document.getElementById("fecha_fin");
+
+    // Campos para mostrar los errores
+    const errorAssignedTo = document.getElementById("errorAssignedTo");
+    const errorFechaInicio = document.getElementById("errorFechaInicio");
+    const errorFechaFin = document.getElementById("errorFechaFin");
+
+    // Función de validación del campo "Asignar a"
+    function validarAssignedTo() {
+        const assignedTo = assignedToInput.value.trim();
+        errorAssignedTo.textContent = "";
+        assignedToInput.style.borderColor = "";
+
+        const nombreRegex = /^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$/; // Solo letras y espacios
+        if (assignedTo === "") {
+            errorAssignedTo.textContent = "El campo 'Asignar a' no puede estar vacío.";
+            assignedToInput.style.borderColor = "red";
+            return false;
+        } else if (!nombreRegex.test(assignedTo)) {
+            errorAssignedTo.textContent = "El campo 'Asignar a' solo puede contener letras y espacios.";
+            assignedToInput.style.borderColor = "red";
+            return false;
+        }
+        return true;
+    }
+
+    // Función de validación de "Fecha de inicio"
+    function validarFechaInicio() {
+        const fechaInicio = fechaInicioInput.value;
+        errorFechaInicio.textContent = "";
+        fechaInicioInput.style.borderColor = "";
+
+        const ahora = new Date();
+        ahora.setHours(ahora.getHours() + 1);
+        const currentDateTime = ahora.toISOString().slice(0, 16);
+        
+        if (!fechaInicio) {
+            errorFechaInicio.textContent = "La fecha de inicio no puede estar vacía.";
+            fechaInicioInput.style.borderColor = "red";
+            return false;
+        }else if (fechaInicio < currentDateTime) {
+            errorFechaInicio.textContent = "La fecha de inicio no puede ser menor que ahora";
+            fechaInicioInput.style.borderColor = "red";
+            return false;
+        }
+
+        return true;
+    }
+
+    // Función de validación de "Fecha de fin"
+    function validarFechaFin() {
+        const fechaInicio = fechaInicioInput.value;
+        const fechaFin = fechaFinInput.value;
+        errorFechaFin.textContent = "";
+        fechaFinInput.style.borderColor = "";
+
+        if (!fechaFin) {
+            errorFechaFin.textContent = "La fecha de fin no puede estar vacía.";
+            fechaFinInput.style.borderColor = "red";
+            return false;
+        } else if (fechaInicio && new Date(fechaInicio) >= new Date(fechaFin)) {
+            errorFechaFin.textContent = "La fecha de inicio debe ser anterior a la fecha de fin.";
+            fechaFinInput.style.borderColor = "red";
+            return false;
+        } else if (fechaInicio && fechaFin) {
+            const diferencia = (new Date(fechaFin) - new Date(fechaInicio)) / (1000 * 60); // Diferencia en minutos
+            if (diferencia < 30) {
+                errorFechaFin.textContent = "La reserva debe durar al menos 30 minutos.";
+                fechaFinInput.style.borderColor = "red";
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Eventos para validación en tiempo real
+    assignedToInput.addEventListener("blur", validarAssignedTo);
+    assignedToInput.addEventListener("keyup", validarAssignedTo);
+
+    fechaInicioInput.addEventListener("blur", validarFechaInicio);
+    fechaInicioInput.addEventListener("keyup", validarFechaInicio);
+
+    fechaFinInput.addEventListener("blur", validarFechaFin);
+    fechaFinInput.addEventListener("keyup", validarFechaFin);
+
+    // Validación al enviar el formulario
+    form.addEventListener("submit", function (event) {
+        const isAssignedToValid = validarAssignedTo();
+        const isFechaInicioValid = validarFechaInicio();
+        const isFechaFinValid = validarFechaFin();
+
+        if (!isAssignedToValid || !isFechaInicioValid || !isFechaFinValid) {
+            event.preventDefault(); // Prevenir el envío si hay errores
+        }
+    });
+});

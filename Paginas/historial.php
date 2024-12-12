@@ -208,3 +208,13 @@
 <?php
     $conn->close();
 ?>
+<!-- $stmt_tables = $conn->prepare("
+                    SELECT r.id_recurso
+                        CASE
+                            WHEN NOW() BETWEEN fecha_asignacion AND fecha_no_asignacion THEN 'Asignada'
+                            ELSE 'No Asignada'
+                        END AS estado_mesa
+                    FROM tbl_recursos r
+                    LEFT JOIN tbl_historial h ON m.id_recurso = h.id_recurso AND h.fecha_NA IS NULL
+                    WHERE m.id_sala = ?
+                "); -->

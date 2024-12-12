@@ -26,6 +26,7 @@ require_once "../Procesos/conection.php";
                     <li><a href="./historial.php" class="nav-link px-2 text-white">Historial</a></li>
                 </ul>
                 <div class="text-end">
+                    <a href="./inicio.php"><button type="button" class="btn btn-outline-danger">Volver a Inicio</button></a>
                     <a href="../Procesos/destruir.php"><button type="button" class="btn btn-outline-danger">Log Out</button></a>
                 </div>
             </div>
@@ -39,7 +40,7 @@ require_once "../Procesos/conection.php";
             $sqlInicio = "SELECT id_sala, nombre_sala, tipo_sala FROM tbl_salas";
             $stmt = $pdo->prepare($sqlInicio);
             $stmt->execute();
-            $salas = $stmt->fetch(PDO::FETCH_ASSOC);
+            $salas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Renderizamos las salas como tarjetas
             foreach ($salas as $sala) {
