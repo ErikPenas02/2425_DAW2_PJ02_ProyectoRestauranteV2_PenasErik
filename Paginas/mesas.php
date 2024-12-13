@@ -1,16 +1,23 @@
 <?php
     require_once "../Procesos/conection.php";
     session_start();
-
+    if (isset($_GET['id_sala'])) {
+        $_SESSION["id_sala"] = htmlspecialchars($_GET['id_sala']);
+    }
+    
+    if (!isset($_SESSION["id_sala"])) {
+        header("Location: ../Paginas/salas.php");
+        exit();
+    }
+    
     // Comprobación de sesión activa
     if (!isset($_SESSION["usuarioAct"])) {
         header('Location: ../index.php');
         exit();
     }
 
-    
-    if (isset($_GET['id_sala'])) {
-        $id_sala = $_GET['id_sala']; 
+    if (isset($_SESSION["id_sala"])) { 
+        $id_sala = $_SESSION["id_sala"]; 
     
         // Sanitizar el nombre de la sala
         $id_sala = htmlspecialchars($id_sala);
@@ -48,6 +55,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $n_sala["nombre_sala"]; ?></title>
     <link rel="stylesheet" href="../CSS/estilosInicio.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../JS/alertAsignar.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 <body>
@@ -103,3 +112,20 @@
     </div>
 </body>
 </html>
+<?php
+if (isset($_GET['error']) && $_GET['error'] === 'conflicto') {
+    echo "<script>
+            document.addEventListener('DOMContentLoaded', function () {
+            Error('La mesa ya está reservada en el rango de fechas seleccionado.');
+            });
+        </script>";
+}
+if(isset($_GET["exito"]) && $_GET["exito"] = "asignar"){
+    echo "<script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Exito('Asignación Exitosa', 'La mesa ha sido asignada correctamente.');
+            });
+        </script>";
+}
+?>
+

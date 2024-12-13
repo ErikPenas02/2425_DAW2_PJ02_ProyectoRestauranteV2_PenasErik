@@ -93,18 +93,9 @@ function Exito(t, md) {
         text: md,
         icon: 'success',
         confirmButtonText: 'Aceptar'
-    }).then(() => window.location.href = "../Paginas/mesas.php");
+    });
 }
 
-// Función para mostrar alertas de error
-function mostrarError(md) {
-    Swal.fire({
-        title: "¡Error!",
-        text: md,
-        icon: 'error',
-        confirmButtonText: 'Aceptar'
-    }).then(() => window.location.href = "../Paginas/asignar_mesa.php");
-}
 
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("form-asignar");

@@ -20,58 +20,60 @@
                 exit();
             }
 
-            // Verificar si se recibió un id_mesa
-            if (!isset($_GET["id_mesa"])) {
-                header('Location: ./inicio.php');
+            if (isset($_GET["id_mesa"])) {
+                $_SESSION["id_mesa"] = htmlspecialchars($_GET["id_mesa"]);
+            } 
+            if (!isset($_SESSION["id_mesa"])) {
+                header("Location: ../Paginas/salas.php");
                 exit();
             }
 
-            $id_mesa = htmlspecialchars($_GET["id_mesa"]);
+            $id_mesa = htmlspecialchars($_SESSION["id_mesa"]);
 
             // Mostrar el botón de regreso a la lista de mesas
-            echo "<a href='mesas.php'><button class='btn btn-secondary mb-4'>Volver a mesas</button></a>";
+            echo "<a href='./mesas.php'><button class='btn btn-secondary mb-4'>Volver a mesas</button></a>";
             echo "<h2>Asignar Recurso $id_mesa</h2>";
 
             // Si la mesa ya está asignada, muestra detalles
             try {
-                $sqlCheckAsignacion = "SELECT * FROM tbl_historial WHERE id_recurso = :id_mesa AND fecha_no_asignacion > NOW()";
-                $stmt = $pdo->prepare($sqlCheckAsignacion);
-                $stmt->bindParam(':id_mesa', $id_mesa);
-                $stmt->execute();
-                $asignacion = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($asignacion) {
-                    echo "<p><strong>Fecha de Inicio:</strong> " . htmlspecialchars($asignacion['fecha_asignacion']) . "</p>";
-                    echo "<p><strong>Fecha de Fin:</strong> " . htmlspecialchars($asignacion['fecha_no_asignacion']) . "</p>";
-                    echo "<p><strong>Asignada a:</strong> " . htmlspecialchars($asignacion['asignado_a']) . "</p>";
-
-                    // Botón para deshacer una reserva
-                    echo "<form method='POST' action=''>";
-                    echo "<input type='hidden' name='mesa' value='$id_mesa'>";
-                    echo "<input type='hidden' name='desasignar' value='true'>";
-                    echo "<button type='submit' class='btn btn-danger'>Desasignar Mesa</button>";
-                    echo "</form>";
-                } else {
-                    // Formulario para asignar la mesa si no está asignada
-                    echo "<form method='POST' id='form-asignar' action='' class='text-left'>";
-                    echo "<div class='form-group'>";
-                    echo "<label for='assigned_to'>Asignar a:</label>";
-                    echo "<input type='text' id='assigned_to' name='assigned_to' class='form-control'>";
-                    echo "<span style='color: red;' id='errorAssignedTo'></span>";
-                    echo "</div>";
-                    echo "<div class='form-group'>";
-                    echo "<label for='fecha_inicio'>Fecha y Hora de Inicio:</label>";
-                    echo "<input type='datetime-local' id='fecha_inicio' name='fecha_inicio' class='form-control'>";
-                    echo "<span style='color: red;' id='errorFechaInicio'></span>";
-                    echo "</div>";
-                    echo "<div class='form-group'>";
-                    echo "<label for='fecha_fin'>Fecha y Hora de Fin:</label>";
-                    echo "<input type='datetime-local' id='fecha_fin' name='fecha_fin' class='form-control'>";
-                    echo "<span style='color: red;' id='errorFechaFin'></span>";
-                    echo "</div>";
-                    echo "<button type='submit' class='btn btn-success mt-3'>Asignar Mesa</button>";
-                    echo "</form>";
+                $sqlReservas = "SELECT fecha_asignacion, fecha_no_asignacion FROM tbl_historial WHERE id_recurso = :id_mesa";
+                $stmtReservas = $pdo->prepare($sqlReservas);
+                $stmtReservas->bindParam(':id_mesa', $id_mesa);
+                $stmtReservas->execute();
+                $reservas = $stmtReservas->fetchAll(PDO::FETCH_ASSOC);
+                
+                echo "<form method='POST' id='form-asignar' action='../Procesos/procesoAsignar.php' class='text-left'>";
+                echo "<div class='form-group'>";
+                echo "<label for='assigned_to'>Asignar a:</label>";
+                echo "<input type='text' id='assigned_to' name='assigned_to' class='form-control'>";
+                echo "<span style='color: red;' id='errorAssignedTo'></span>";
+                echo "</div>";
+                echo "<div class='form-group'>";
+                echo "<label for='fecha_inicio'>Fecha y Hora de Inicio:</label>";
+                echo "<input type='datetime-local' id='fecha_inicio' name='fecha_inicio' class='form-control'>";
+                echo "<span style='color: red;' id='errorFechaInicio'></span>";
+                echo "</div>";
+                echo "<div class='form-group'>";
+                echo "<label for='fecha_fin'>Fecha y Hora de Fin:</label>";
+                echo "<input type='datetime-local' id='fecha_fin' name='fecha_fin' class='form-control'>";
+                echo "<span style='color: red;' id='errorFechaFin'></span>";
+                if ($reservas) {
+                    echo "<h5>Reservas existentes:</h5>";
+                    echo "<ul>";
+                    foreach ($reservas as $reserva) {
+                        if(is_null($reserva['fecha_no_asignacion'])){
+                            $fecha_final = "";
+                        } else {
+                            $fecha_final = htmlspecialchars($reserva['fecha_no_asignacion']);
+                        }
+                        echo "<li>" . htmlspecialchars($reserva['fecha_asignacion']) . "<-->" . $fecha_final . "</li>";
+                    }
+                    echo "</ul>";
                 }
+                echo "<input type='hidden' name='mesa' value='$id_mesa'>";
+                echo "</div>";
+                echo "<button type='submit' class='btn btn-success mt-3' name='formAsignar'>Asignar Mesa</button>";
+                echo "</form>";
 
             } catch (PDOException $e) {
                 echo "<p>Error: " . htmlspecialchars($e->getMessage()) . "</p>";
