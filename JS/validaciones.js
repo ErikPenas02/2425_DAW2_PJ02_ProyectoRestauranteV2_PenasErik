@@ -86,17 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// Función para mostrar alertas de éxito
-function Exito(t, md) {
-    Swal.fire({
-        title: t,
-        text: md,
-        icon: 'success',
-        confirmButtonText: 'Aceptar'
-    });
-}
-
-
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("form-asignar");
 
@@ -196,6 +185,114 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!isAssignedToValid || !isFechaInicioValid || !isFechaFinValid) {
             event.preventDefault(); // Prevenir el envío si hay errores
+        }
+    });
+});
+
+// VALIDACIONES EDITAR Y CREAR USERS
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+
+    // Campos del formulario
+    const nombreInput = document.getElementById("nombre");
+    const apellidoInput = document.getElementById("apellido");
+    const usernameInput = document.getElementById("username");
+    const rolInput = document.getElementById("rol");
+
+    // Campos para mostrar errores
+    const errorNombre = document.getElementById("error-nombre");
+    const errorApellido = document.getElementById("error-ap");
+    const errorUsername = document.getElementById("error-username");
+
+    // Función de validación del campo "Nombre"
+    function validarNombre() {
+        const nombre = nombreInput.value.trim();
+        errorNombre.textContent = "";
+        nombreInput.style.borderColor = "";
+
+        const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{2,50}$/; // Solo letras y espacios
+        if (nombre === "") {
+            errorNombre.textContent = "No puede estar vacío.";
+            nombreInput.style.borderColor = "red";
+            return false;
+        } else if (!nombreRegex.test(nombre)) {
+            errorNombre.textContent = "Debe tener entre 2 y 50 letras y espacios.";
+            nombreInput.style.borderColor = "red";
+            return false;
+        }
+        return true;
+    }
+
+    // Función de validación del campo "Apellido"
+    function validarApellido() {
+        const apellido = apellidoInput.value.trim();
+        errorApellido.textContent = "";
+        apellidoInput.style.borderColor = "";
+
+        const apellidoRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{2,50}$/; // Solo letras y espacios
+        if (apellido === "") {
+            errorApellido.textContent = "No puede estar vacío.";
+            apellidoInput.style.borderColor = "red";
+            return false;
+        } else if (!apellidoRegex.test(apellido)) {
+            errorApellido.textContent = "Debe tener entre 2 y 50 letras y espacios.";
+            apellidoInput.style.borderColor = "red";
+            return false;
+        }
+        return true;
+    }
+
+    // Función de validación del campo "Username"
+    function validarUsername() {
+        const username = usernameInput.value.trim();
+        errorUsername.textContent = "";
+        usernameInput.style.borderColor = "";
+
+        const usernameRegex = /^[A-Za-z0-9_]{3,20}$/; // Letras, números y guion bajo
+        if (username === "") {
+            errorUsername.textContent = "No puede estar vacío.";
+            usernameInput.style.borderColor = "red";
+            return false;
+        } else if (!usernameRegex.test(username)) {
+            errorUsername.textContent = "Debe tener entre 3 y 20 caracteres (letras, números y guion bajo).";
+            usernameInput.style.borderColor = "red";
+            return false;
+        }
+        return true;
+    }
+
+    // Función de validación del campo "Rol"
+    function validarRol() {
+        if (rolInput.value === "") {
+            alert("Por favor selecciona un rol válido.");
+            rolInput.style.borderColor = "red";
+            return false;
+        }
+        rolInput.style.borderColor = "";
+        return true;
+    }
+
+    // Eventos para validación en tiempo real
+    nombreInput.addEventListener("blur", validarNombre);
+    nombreInput.addEventListener("keyup", validarNombre);
+
+    apellidoInput.addEventListener("blur", validarApellido);
+    apellidoInput.addEventListener("keyup", validarApellido);
+
+    usernameInput.addEventListener("blur", validarUsername);
+    usernameInput.addEventListener("keyup", validarUsername);
+
+    rolInput.addEventListener("blur", validarRol);
+
+    // Validación al enviar el formulario
+    form.addEventListener("submit", function (event) {
+        const isNombreValid = validarNombre();
+        const isApellidoValid = validarApellido();
+        const isUsernameValid = validarUsername();
+        const isRolValid = validarRol();
+
+        if (!isNombreValid || !isApellidoValid || !isUsernameValid || !isRolValid) {
+            event.preventDefault(); // Evita el envío si hay errores
         }
     });
 });

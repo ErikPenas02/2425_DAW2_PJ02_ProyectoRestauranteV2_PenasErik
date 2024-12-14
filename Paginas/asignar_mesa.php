@@ -7,6 +7,7 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/estilos-asignar.css">
     <script src="../JS/validaciones.js"></script>
+    <script src="../JS/alertAsignar.js"></script>
 </head>
 <body>
     <div class="container text-center mt-4">
@@ -29,7 +30,7 @@
             }
 
             $id_mesa = htmlspecialchars($_SESSION["id_mesa"]);
-
+            $hoy = getdate();
             // Mostrar el botón de regreso a la lista de mesas
             echo "<a href='./mesas.php'><button class='btn btn-secondary mb-4'>Volver a mesas</button></a>";
             echo "<h2>Asignar Recurso $id_mesa</h2>";
@@ -66,7 +67,9 @@
                         } else {
                             $fecha_final = htmlspecialchars($reserva['fecha_no_asignacion']);
                         }
-                        echo "<li>" . htmlspecialchars($reserva['fecha_asignacion']) . "<-->" . $fecha_final . "</li>";
+                        if ($hoy < $reserva['fecha_no_asignacion']){
+                            echo "<li>" . htmlspecialchars($reserva['fecha_asignacion']) . "<-->" . $fecha_final . "</li>";
+                        }
                     }
                     echo "</ul>";
                 }

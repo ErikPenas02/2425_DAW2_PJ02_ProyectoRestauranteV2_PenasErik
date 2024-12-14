@@ -43,13 +43,13 @@ include_once "../Procesos/conection.php";
     <?php
     if ($_SESSION["rolAct"] === 1) {
         ?>
-        <a href="./historial.php" style="text-decoration: none;">
+        <a href="./users.php" style="text-decoration: none;">
             <div class="opcion" id="opcionUsers">
                 <span>USERS</span>
             </div>
         </a>
         
-        <a href="./historial.php" style="text-decoration: none;">
+        <a href="./recursos.php" style="text-decoration: none;">
             <div class="opcion" id="opcionRecursos">
                 <span>RECURSOS</span>
             </div>
