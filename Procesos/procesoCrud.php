@@ -20,11 +20,18 @@ if(isset($_POST["edit_user"])){
         $username = htmlspecialchars($_POST["username"]);
         $rol = htmlspecialchars($_POST["rol"]);
 
-        $sqlUPDUser = "SELECT id_usuarios FROM tbl_usuarios WHERE username = :u_n";
-        $stmt = $pdo->prepare($sqlUPDUser);
+        $sqlCheckUsername = "SELECT COUNT(*) as total FROM tbl_usuarios WHERE username = :u_n AND id_usuario != :id_user";
+        $stmt = $pdo->prepare($sqlCheckUsername);
         $stmt->bindParam(':u_n', $username);
-
+        $stmt->bindParam(':id_user', $id_user);
         $stmt->execute();
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($resultado['total'] > 0) {
+            // Si hay duplicados, no permitir la actualización
+            header("Location: ../Paginas/users.php?error=username_exists");
+            exit();
+        }
 
         $sqlUPDUser = "UPDATE tbl_usuarios SET nombre_usuario = :n_user, apellido_usuario = :ap_user, username = :u_n, id_rol = :id_rol WHERE id_usuario = :id_user";
         $stmt = $pdo->prepare($sqlUPDUser);
