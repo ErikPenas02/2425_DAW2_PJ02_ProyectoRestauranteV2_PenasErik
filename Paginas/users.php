@@ -56,6 +56,19 @@ try {
 </head>
 <body>
 <div class="container my-4">
+    <header class="p-2 bg-dark text-white">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="./inicio.php" class="nav-link px-2 text-secondary">Home</a></li>
+                    <li><a href="./historial.php" class="nav-link px-2 text-white">Historial</a></li>
+                </ul>
+                <div class="text-end">
+                    <a href="../Procesos/destruir.php"><button type="button" class="btn btn-outline-danger">Log Out</button></a>
+                </div>
+            </div>
+        </div>
+    </header>
     <h1 class="text-center">Gestión de Usuarios</h1>
 
     <!-- Formulario de Búsqueda -->
@@ -111,7 +124,7 @@ try {
         <?php } ?>
         </tbody>
     </table>
-    <a href="./Paginas/editar.php">
+    <a href="../Paginas/crear.php?crear=si">
         <button type="button" class="btn btn-secondary">CREAR</button>
     </a>
 </body>
@@ -130,7 +143,7 @@ if (isset($_GET['exito'])) {
         case 'crear':
                 echo "<script>
                     document.addEventListener('DOMContentLoaded', function () {
-                        Exito('Bien Creado', 'El usuario ha sido modificado correctamente.');
+                        Exito('Bien Creado', 'El usuario ha sido creado correctamente.');
                     });
                 </script>";
             break;

@@ -15,6 +15,21 @@
             require_once "../Procesos/conection.php";
             session_start();
 
+            if(isset($_GET["del_reserva"])){
+                try {
+                    $sqlDelete = "DELETE FROM tbl_historial WHERE id_recurso = :id_mesa AND fecha_asignacion = :fch_asig";
+                    $stmt = $pdo->prepare($sqlDelete);
+                    $stmt->bindParam(':id_mesa', $id_mesa);
+                    $stmt->bindParam(':fch_asig', $_GET["del_reserva"]);
+                    $stmt->execute();
+                    header("Location: ./asignar_mesa.php");
+                    exit();
+
+                } catch (PDOException $e) {
+                    echo "<p>Error: " . htmlspecialchars($e->getMessage()) . "</p>";
+                }
+
+            }
             // Verificar si hay sesión activa
             if (!isset($_SESSION["usuarioAct"])) {
                 header('Location: ../index.php');
@@ -24,13 +39,14 @@
             if (isset($_GET["id_mesa"])) {
                 $_SESSION["id_mesa"] = htmlspecialchars($_GET["id_mesa"]);
             } 
+
             if (!isset($_SESSION["id_mesa"])) {
                 header("Location: ../Paginas/salas.php");
                 exit();
             }
 
             $id_mesa = htmlspecialchars($_SESSION["id_mesa"]);
-            $hoy = getdate();
+            $hoy = date("Y-m-d H:i:s");
             // Mostrar el botón de regreso a la lista de mesas
             echo "<a href='./mesas.php'><button class='btn btn-secondary mb-4'>Volver a mesas</button></a>";
             echo "<h2>Asignar Recurso $id_mesa</h2>";
@@ -58,9 +74,13 @@
                 echo "<label for='fecha_fin'>Fecha y Hora de Fin:</label>";
                 echo "<input type='datetime-local' id='fecha_fin' name='fecha_fin' class='form-control'>";
                 echo "<span style='color: red;' id='errorFechaFin'></span>";
+                echo "<input type='hidden' name='mesa' value='$id_mesa'>";
+                echo "</div>";
+                echo "<button type='submit' class='btn btn-success mt-3' name='formAsignar'>Asignar Mesa</button>";
+                echo "</form>";
                 if ($reservas) {
+                    echo "<form method='GET' action='../asignar_mesa.php'>";
                     echo "<h5>Reservas existentes:</h5>";
-                    echo "<ul>";
                     foreach ($reservas as $reserva) {
                         if(is_null($reserva['fecha_no_asignacion'])){
                             $fecha_final = "";
@@ -68,16 +88,13 @@
                             $fecha_final = htmlspecialchars($reserva['fecha_no_asignacion']);
                         }
                         if ($hoy < $reserva['fecha_no_asignacion']){
-                            echo "<li>" . htmlspecialchars($reserva['fecha_asignacion']) . "<-->" . $fecha_final . "</li>";
+                            echo htmlspecialchars($reserva['fecha_asignacion']) . "<-->" . $fecha_final . " " . 
+                            "<input type='hidden' name='del_reserva' value='" . $reserva['fecha_asignacion'] . "'>" .
+                            "<button type='button' class='btn btn-danger'>Eliminar Reserva</button></a>";
                         }
+                        echo "</form>";
                     }
-                    echo "</ul>";
                 }
-                echo "<input type='hidden' name='mesa' value='$id_mesa'>";
-                echo "</div>";
-                echo "<button type='submit' class='btn btn-success mt-3' name='formAsignar'>Asignar Mesa</button>";
-                echo "</form>";
-
             } catch (PDOException $e) {
                 echo "<p>Error: " . htmlspecialchars($e->getMessage()) . "</p>";
             }

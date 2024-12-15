@@ -198,11 +198,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const apellidoInput = document.getElementById("apellido");
     const usernameInput = document.getElementById("username");
     const rolInput = document.getElementById("rol");
+    const passwordInput = document.getElementById("pwd");
+    const repeatPasswordInput = document.getElementById("repPwd");
+
+
 
     // Campos para mostrar errores
     const errorNombre = document.getElementById("error-nombre");
     const errorApellido = document.getElementById("error-ap");
     const errorUsername = document.getElementById("error-username");
+    const errorPassword = document.getElementById("error-pwd");
+    const errorRepeatPassword = document.getElementById("error-reppwd");
 
     // Función de validación del campo "Nombre"
     function validarNombre() {
@@ -272,6 +278,45 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
     }
 
+    function validarPassword() {
+        const password = passwordInput.value.trim();
+        errorPassword.textContent = "";
+        passwordInput.style.borderColor = "";
+
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (password === "") {
+            errorPassword.textContent = "La contraseña no puede estar vacía.";
+            passwordInput.style.borderColor = "red";
+            return false;
+        } else if (!passwordRegex.test(password)) {
+            errorPassword.textContent = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.";
+            passwordInput.style.borderColor = "red";
+            return false;
+        }
+        return true;
+    }
+
+    // Función de validación del campo "Repetir Password"
+    function validarRepeatPassword() {
+        const password = passwordInput.value.trim();
+        const repeatPassword = repeatPasswordInput.value.trim();
+
+        errorRepeatPassword.textContent = "";
+        repeatPasswordInput.style.borderColor = "";
+
+        if (repeatPassword === "") {
+            errorRepeatPassword.textContent = "Este campo no puede estar vacío.";
+            repeatPasswordInput.style.borderColor = "red";
+            return false;
+        } else if (repeatPassword !== password) {
+            errorRepeatPassword.textContent = "Las contraseñas no coinciden.";
+            repeatPasswordInput.style.borderColor = "red";
+            return false;
+        }
+        return true;
+    }
+
     // Eventos para validación en tiempo real
     nombreInput.addEventListener("blur", validarNombre);
     nombreInput.addEventListener("keyup", validarNombre);
@@ -284,15 +329,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     rolInput.addEventListener("blur", validarRol);
 
+    passwordInput.addEventListener("blur", validarPassword);
+
+    repeatPasswordInput.addEventListener("blur", validarRepeatPassword);
+    repeatPasswordInput.addEventListener("keyup", validarRepeatPassword);
+
     // Validación al enviar el formulario
     form.addEventListener("submit", function (event) {
         const isNombreValid = validarNombre();
         const isApellidoValid = validarApellido();
         const isUsernameValid = validarUsername();
         const isRolValid = validarRol();
+        const isPasswordValid = validarPassword();
+        const isRepeatPasswordValid = validarRepeatPassword();
 
-        if (!isNombreValid || !isApellidoValid || !isUsernameValid || !isRolValid) {
-            event.preventDefault(); // Evita el envío si hay errores
+        if (!isNombreValid || !isApellidoValid || !isUsernameValid || !isRolValid || !isPasswordValid || !isRepeatPasswordValid) {
+            event.preventDefault(); // Evitar envío
         }
     });
 });
