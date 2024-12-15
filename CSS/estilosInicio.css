@@ -1,0 +1,120 @@
+/* Hoja de estilos para las salas */
+
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url("./img/fondoInicio.webp");
+    background-size: cover;  /* La imagen cubrirá todo el div */
+    background-position: center; /* Centra la imagen */
+}
+
+a {
+    text-decoration: none;
+}
+
+.opciones {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 20px;
+    padding: 20px;
+}
+.opcion {
+    border: 2px solid black;
+    border-radius: 10px;
+    background-size: cover;  /* La imagen cubrirá todo el div */
+    background-position: center; /* Centra la imagen */
+    width: 250px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+#opcionSalas{
+    background-image: url("img/imgSalas.png");
+}
+
+#opcionUsers{
+    background-image: url("img/imgUsers.png");
+}
+
+#opcionRecursos{
+    background-image: url("img/imgRecursos.png");
+}
+
+.opcion:hover {
+    transform: scale(1.05);
+    border-color: #007bff;
+}
+
+.opcion span {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    color: rgb(0, 33, 164);
+}
+
+.mensajeInicio{
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border-color: red;
+}
+
+/* Estilos Salas.php */
+.sala-card {
+    border: 1px solid #000;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.5s ease;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+.sala-card h3 {
+    white-space: nowrap; /* Evita que el texto se parta en varias líneas */
+    overflow: hidden;    /* Oculta el texto que exceda el tamaño del contenedor */
+    text-overflow: ellipsis; /* Agrega "..." si el texto es demasiado largo */
+    font-size: 1.2rem;
+    
+}
+.sala-card:hover {
+    transform: scale(1.05);
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+/* Estilos Mesas.php */
+
+.mesa-card {
+    background-color: rgba(137, 62, 0, 0.7);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    color: white;
+    border-radius: 10px;
+    width: 250px;
+    text-align: center;
+    padding: 15px;
+    transition: transform 0.3s ease, background-color 0.5 ease, box-shadow 0.5s ease;
+}
+
+.mesa-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.8);
+    background-color: rgba(137, 62, 0, 1.4)
+}
+
+.mesa-card .asignada {
+    color: red;
+    font-weight: bold;
+}
+
+.mesa-card .libre {
+    color: green;
+    font-weight: bold;
+}
+
