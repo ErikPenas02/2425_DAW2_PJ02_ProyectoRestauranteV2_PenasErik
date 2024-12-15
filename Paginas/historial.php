@@ -1,220 +1,124 @@
 <?php
-    
-    require_once "../Procesos/conection.php";
-    session_start();
+// Conexión PDO
+$host = 'localhost';
+$dbname = 'db_restaurante_v2';
+$username = 'root';
+$password = '';
 
-    // Check if the user is logged in
-    if (!isset($_SESSION["usuarioAct"])) {
-        header('Location: ../index.php?error=nosesion');
-        exit();
-    }
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("ERROR: No se pudo conectar. " . $e->getMessage());
+}
 
-    // Inicializar variables
-    $SalaSeleccionada = isset($_POST['room']) ? $_POST['room'] : null;
-    $selectedTable = isset($_POST['table']) ? $_POST['table'] : null;
-    $filterDate = isset($_POST['filter_date']) ? $_POST['filter_date'] : null;
-    $filterCamarero = isset($_POST['filter_camarero']) ? $_POST['filter_camarero'] : null;
+// Variables para los filtros
+$filtroAsignado = isset($_GET['filtroAsignado']) ? trim($_GET['filtroAsignado']) : '';
+$filtroFechaInicio = isset($_GET['fechaInicio']) ? trim($_GET['fechaInicio']) : '';
+$filtroFechaFin = isset($_GET['fechaFin']) ? trim($_GET['fechaFin']) : '';
+$filtroRecurso = isset($_GET['filtroRecurso']) ? trim($_GET['filtroRecurso']) : '';
 
+// Construcción de la consulta dinámica
+$filtros = [];
+$params = [];
+
+if (!empty($filtroAsignado)) {
+    $filtros[] = "(u.nombre_usuario LIKE :filtroAsignado OR h.asignado_a LIKE :filtroAsignado)";
+    $params[':filtroAsignado'] = "%$filtroAsignado%";
+}
+
+if (!empty($filtroFechaInicio) && !empty($filtroFechaFin)) {
+    $filtros[] = "(h.fecha_asignacion >= :fechaInicio AND h.fecha_no_asignacion <= :fechaFin)";
+    $params[':fechaInicio'] = $filtroFechaInicio;
+    $params[':fechaFin'] = $filtroFechaFin;
+}
+
+if (!empty($filtroRecurso)) {
+    $filtros[] = "r.nombre_recurso LIKE :filtroRecurso";
+    $params[':filtroRecurso'] = "%$filtroRecurso%";
+}
+
+$whereSQL = count($filtros) > 0 ? "WHERE " . implode(" AND ", $filtros) : "";
+$sql = "
+    SELECT h.id_historial, h.fecha_asignacion, h.fecha_no_asignacion, h.asignado_a, 
+           r.nombre_recurso, u.nombre_usuario, u.apellido_usuario
+    FROM tbl_historial h
+    JOIN tbl_recursos r ON h.id_recurso = r.id_recurso
+    JOIN tbl_usuarios u ON h.asignado_por = u.id_usuario
+    $whereSQL
+";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$historial = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Historial de Mesas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial</title>
     <link rel="stylesheet" href="../CSS/estilos-historial.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../JS/alertAsignar.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <a href="inicio.php"><button class="back">Volver a salas</button></a>
+<header class="p-2 bg-dark text-white">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="./inicio.php" class="nav-link px-2 text-secondary">Home</a></li>
+                    <li><a href="./historial.php" class="nav-link px-2 text-white">Historial</a></li>
+                </ul>
+                <div class="text-end">
+                    <a href="../Procesos/destruir.php"><button type="button" class="btn btn-outline-danger">Log Out</button></a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <h1>Filtros de Historial</h1>
+    <form method="GET" action="" style="align-items: center; justify-content: center;">
+        <label for="filtroAsignado">Asignado por o Asignado a:</label>
+        <input type="text" name="filtroAsignado" id="filtroAsignado" value="<?= htmlspecialchars($filtroAsignado) ?>"><br>
 
-    <h2>Selecciona una Sala y Mesa para ver el Historial</h2>
+        <label for="fechaInicio">Fecha de Asignación (desde):</label>
+        <input type="datetime-local" name="fechaInicio" id="fechaInicio" value="<?= htmlspecialchars($filtroFechaInicio) ?>">
 
-    <!-- Room Selection Form -->
-    <form method="post" action="historial.php">
-        <label for="room">Seleccione una Sala:</label>
-        <select name="room" id="room" onchange="this.form.submit()">
-            <option value="">Todo</option>
-            <?php
-            // Query to fetch rooms
-            $stmt_rooms = $conn->prepare("SELECT id_salas, name_sala FROM tbl_salas");
-            $stmt_rooms->execute();
-            $result_rooms = $stmt_rooms->get_result();
+        <label for="fechaFin">Fecha de No Asignación (hasta):</label>
+        <input type="datetime-local" name="fechaFin" id="fechaFin" value="<?= htmlspecialchars($filtroFechaFin) ?>"><br>
 
-            while ($row = $result_rooms->fetch_assoc()) {
-                $selected = ($SalaSeleccionada == $row['id_salas']) ? 'selected' : '';
-                echo "<option value='" . $row['id_salas'] . "' $selected>" . $row['name_sala'] . "</option>";
-            }
+        <label for="filtroRecurso">Nombre del Recurso:</label>
+        <input type="text" name="filtroRecurso" id="filtroRecurso" value="<?= htmlspecialchars($filtroRecurso) ?>"><br>
 
-            $stmt_rooms->close();
-            ?>
-        </select>
+        <button type="submit" class="btn btn-outline-primary">Filtrar</button>
     </form>
 
-    <?php if ($SalaSeleccionada): ?>
-        <!-- Table Selection Form (only shown if a room is selected) -->
-        <form method="post" action="historial.php">
-            <label for="table" >Seleccione una Mesa:</label>
-            <select name="table" id="table" onchange="this.form.submit()">
-                <option value="" disabled>Seleccione una Mesa</option>
-                <?php
-                // Query to fetch tables for the selected room, with their assignment status
-                $stmt_tables = $conn->prepare("
-                    SELECT m.id_mesa, m.n_asientos,
-                        CASE
-                            WHEN h.fecha_NA IS NULL AND h.id_mesa IS NOT NULL THEN 'Asignada'
-                            ELSE 'No Asignada'
-                        END AS estado_mesa
-                    FROM tbl_mesas m
-                    LEFT JOIN tbl_historial h ON m.id_mesa = h.id_mesa AND h.fecha_NA IS NULL
-                    WHERE m.id_sala = ?
-                ");
-                $stmt_tables->bind_param("i", $SalaSeleccionada);
-                $stmt_tables->execute();
-                $result_tables = $stmt_tables->get_result();
-
-                while ($row = $result_tables->fetch_assoc()) {
-                    $selected = ($selectedTable == $row['id_mesa']) ? 'selected' : '';
-                    echo "<option value='" . $row['id_mesa'] . "' $selected>Mesa " . $row['id_mesa'] . " (" . $row['n_asientos'] . " asientos, " . $row['estado_mesa'] . ")</option>";
-                }
-
-                $stmt_tables->close();
-                ?>
-            </select>
-            <input type="hidden" name="room" value="<?php echo $SalaSeleccionada; ?>">
-        </form>
-    <?php endif; ?>
-
-    <?php if ($selectedTable): ?>
-        <!-- Filters for the table history -->
-        <form method="post" action="historial.php">
-            <input type="hidden" name="room" value="<?php echo $SalaSeleccionada; ?>">
-            <input type="hidden" name="table" value="<?php echo $selectedTable; ?>">
-
-            <label for="filter_date">Filtrar por Fecha:</label>
-            <input type="date" name="filter_date" id="filter_date" value="<?php echo $filterDate; ?>" onchange="this.form.submit()">
-
-            <label for="filter_camarero">Filtrar por Camarero:</label>
-            <select name="filter_camarero" id="filter_camarero" onchange="this.form.submit()">
-                <option value="" disabled>Seleccione un Camarero</option>
-                <?php
-                // Query to fetch all camareros
-                $stmt_camareros = $conn->prepare("SELECT id_camarero, name_camarero, surname_camarero FROM tbl_camarero");
-                $stmt_camareros->execute();
-                $result_camareros = $stmt_camareros->get_result();
-
-                while ($row = $result_camareros->fetch_assoc()) {
-                    $selectedCamarero = ($filterCamarero == $row['id_camarero']) ? 'selected' : '';
-                    echo "<option value='" . $row['id_camarero'] . "' $selectedCamarero>" . $row['name_camarero'] . " " . $row['surname_camarero'] . "</option>";
-                }
-
-                $stmt_camareros->close();
-                ?>
-            </select>
-        </form>
-        <h3>Historial de Mesa <?php echo $selectedTable; ?></h3>
+    <h2>Resultados</h2>
+    <?php if (count($historial) > 0): ?>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Fecha de Asignación</th>
+                <th>Fecha de Desasignación</th>
+                <th>Asignado a</th>
+                <th>Recurso</th>
+                <th>Asignado por</th>
+            </tr>
+            <?php foreach ($historial as $row): ?>
+                <tr>
+                    <td><?= htmlspecialchars($row['id_historial']) ?></td>
+                    <td><?= htmlspecialchars($row['fecha_asignacion']) ?></td>
+                    <td><?= htmlspecialchars($row['fecha_no_asignacion'] ?: 'N/A') ?></td>
+                    <td><?= htmlspecialchars($row['asignado_a']) ?></td>
+                    <td><?= htmlspecialchars($row['nombre_recurso']) ?></td>
+                    <td><?= htmlspecialchars($row['nombre_usuario'] . ' ' . $row['apellido_usuario']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
     <?php else: ?>
-        <h3>Historial Completo de Mesas</h3>
+        <p>No se encontraron resultados con los filtros aplicados.</p>
     <?php endif; ?>
-
-    <?php
-        // Consulta SQL base para mostrar el historial completo si no se selecciona mesa ni sala
-        $sql = "
-            SELECT h.fecha_A, h.fecha_NA, c.name_camarero, c.surname_camarero, h.assigned_to, m.id_mesa, m.n_asientos, s.name_sala
-            FROM tbl_historial h
-            JOIN tbl_camarero c ON h.assigned_by = c.id_camarero
-            JOIN tbl_mesas m ON h.id_mesa = m.id_mesa
-            JOIN tbl_salas s ON m.id_sala = s.id_salas
-        ";
-
-        // Variables para los parámetros de la consulta
-        $parametros = [];
-        $tipos = "";
-
-        // Si hay filtro de fecha
-        if ($filterDate) {
-            $sql .= " AND DATE(h.fecha_A) = ?";
-            $parametros[] = $filterDate;
-            $tipos .= "s";
-        }
-
-        // Si hay filtro de camarero
-        if ($filterCamarero) {
-            $sql .= " AND h.assigned_by = ?";
-            $parametros[] = $filterCamarero;
-            $tipos .= "i";
-        }
-
-        // Si se seleccionó una sala
-        if ($SalaSeleccionada) {
-            $sql .= " AND m.id_sala = ?";
-            $parametros[] = $SalaSeleccionada;
-            $tipos .= "i";
-        }
-
-        // Si se seleccionó una mesa
-        if ($selectedTable) {
-            $sql .= " AND h.id_mesa = ?";
-            $parametros[] = $selectedTable;
-            $tipos .= "i";
-        }
-
-        // Si se tienen parámetros, se vinculan
-        if (!empty($tipos)) {
-            // Preparar y ejecutar la consulta
-            $stmt_history = $conn->prepare($sql);
-        
-            // Vincular los parámetros dinámicamente
-            $stmt_history->bind_param($tipos, ...$parametros);
-        } else {
-            // Si no hay parámetros, simplemente ejecutamos la consulta sin bind_param
-            $stmt_history = $conn->prepare($sql);
-        }
-
-        // Ejecutar la consulta
-        $stmt_history->execute();
-        $result_history = $stmt_history->get_result();
-
-        if ($result_history->num_rows > 0) {
-            echo "<div class='historial'>";
-                echo "<table border='1'>
-                        <tr class'attr_tr'>
-                            <th>Sala</th>
-                            <th>Mesa</th>
-                            <th>Camarero</th>
-                            <th>Fecha ocupación</th>
-                            <th>Cliente asignado</th>
-                            <th>Fecha desocupación</th>
-                        </tr>";
-                while ($row = $result_history->fetch_assoc()) {
-                    echo "<tr>
-                            <td>" . $row['name_sala'] . "</td>
-                            <td>Mesa " . $row['id_mesa'] . " (" . $row['n_asientos'] . " asientos)</td>
-                            <td>" . $row['name_camarero'] . " " . $row['surname_camarero'] . "</td>
-                            <td>" . $row['fecha_A'] . "</td>
-                            <td>" . $row['assigned_to'] . "</td>
-                            <td>" . ($row['fecha_NA'] ? $row['fecha_NA'] : "N/A") . "</td>
-                        </tr>";
-                }
-                echo "</table>";
-            echo "</div>";
-        } else {
-            echo "<p>No hay historial disponible.</p>";
-        }
-
-        $stmt_history->close();
-    ?>
 </body>
 </html>
-<?php
-    $conn->close();
-?>
-<!-- $stmt_tables = $conn->prepare("
-                    SELECT r.id_recurso
-                        CASE
-                            WHEN NOW() BETWEEN fecha_asignacion AND fecha_no_asignacion THEN 'Asignada'
-                            ELSE 'No Asignada'
-                        END AS estado_mesa
-                    FROM tbl_recursos r
-                    LEFT JOIN tbl_historial h ON m.id_recurso = h.id_recurso AND h.fecha_NA IS NULL
-                    WHERE m.id_sala = ?
-                "); -->
