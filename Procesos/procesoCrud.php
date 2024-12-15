@@ -165,12 +165,12 @@ if(isset($_POST["edit_recurso"])){
 }
 
 // Crear Recurso
-if(isset($_POST["crear_sala"])){
+if(isset($_POST["crear_recurso"])){
     try{
-        $nombre_recurso = htmlspecialchars($_POST["nombre_sala"]);
-        $tipo_recurso = htmlspecialchars($_POST["tipo_sala"]);
+        $nombre_recurso = htmlspecialchars($_POST["nombre_recurso"]);
+        $tipo_recurso = htmlspecialchars($_POST["tipo_recurso"]);
         $id_sala = !empty($_POST["id_sala"]) ? htmlspecialchars($_POST["id_sala"]) : null;
-        $id_padre = !empty($_POST["id_sala"]) ? htmlspecialchars($_POST["id_sala"]) : null;
+        $id_padre = !empty($_POST["id_padre"]) ? htmlspecialchars($_POST["id_padre"]) : null;
 
         $sqlINSSalas = "INSERT INTO tbl_recursos (nombre_recurso, tipo_recurso, id_padre, id_sala) VALUES (:nombre_recurso, :tipo_recurso, :id_padre, :id_sala);";
         $stmt = $pdo->prepare($sqlINSSalas);
