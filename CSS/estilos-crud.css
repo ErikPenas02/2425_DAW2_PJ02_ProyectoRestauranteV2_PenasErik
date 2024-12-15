@@ -65,3 +65,13 @@
     text-align: center;
     vertical-align: middle;
 }
+
+.table-responsive-scroll {
+    max-height: 400px; /* Puedes ajustar la altura máxima */
+    overflow-y: auto; /* Habilita el scroll vertical */
+    border: 1px solid #ddd; /* Opcional: un borde para destacar el área */
+}
+
+.table-responsive-scroll table {
+    margin-bottom: 0; /* Quita el margen de la tabla dentro del contenedor */
+}

@@ -7,11 +7,14 @@ if(isset($_SESSION["rolAct"]) && $_SESSION["rolAct"] !== 1){
     exit();
 }
 
-if(!isset($_POST["edit_user"]) && !isset($_POST["crear_user"]) && !isset($_POST["edit_recurso"]) && !isset($_POST["crear_recurso"])){
+if(!isset($_POST["edit_user"]) && !isset($_POST["crear_user"]) 
+    && !isset($_POST["edit_sala"]) && !isset($_POST["crear_sala"])
+    && !isset($_POST["edit_recurso"]) && !isset($_POST["crear_recurso"])){
     header("Location: ./users.php");
     exit();
 }
 
+// Editar User
 if(isset($_POST["edit_user"])){
     try{
         $id_user = htmlspecialchars($_POST["id_usuario"]);
@@ -51,6 +54,8 @@ if(isset($_POST["edit_user"])){
     
 
 }
+
+// Crear Salas
 if(isset($_POST["crear_user"])){
     try{
         $id_user = htmlspecialchars($_POST["id_usuario"]);
@@ -69,7 +74,7 @@ if(isset($_POST["crear_user"])){
 
         if ($resultado['total'] > 0) {
             // Si hay duplicados, no permitir la actualización
-            header("Location: ../Paginas/crear.php?error=username_exists");
+            header("Location: ../Paginas/users.php?error=username_exists");
             exit();
         }
 
@@ -90,10 +95,97 @@ if(isset($_POST["crear_user"])){
         echo "Error al filtrar: " . $e->getMessage();
         die();
     }
-    
+}
+// Editar Sala
+if(isset($_POST["edit_sala"])){
+    try {
+        $id_sala = htmlspecialchars($_POST["id_sala"]);
+        $nombre_sala = htmlspecialchars($_POST["nombre_sala"]);
+        $tipo_sala = htmlspecialchars($_POST["tipo_sala"]);
 
+        $sqlUPDSala = "UPDATE tbl_salas 
+                       SET nombre_sala = :nombre_sala, tipo_sala = :tipo_sala 
+                       WHERE id_sala = :id_sala";
+        $stmt = $pdo->prepare($sqlUPDSala);
+        $stmt->bindParam(':nombre_sala', $nombre_sala);
+        $stmt->bindParam(':tipo_sala', $tipo_sala);
+        $stmt->bindParam(':id_sala', $id_sala, PDO::PARAM_INT);
+        $stmt->execute();
+
+        header("Location: ../Paginas/recursos.php?exito=edit_sala");
+        exit();
+    } catch (PDOException $e) {
+        echo "Error al editar la sala: " . $e->getMessage();
+        die();
+    }
+}
+if(isset($_POST["crear_sala"])){
+    try{
+        $nombre_sala = htmlspecialchars($_POST["nombre_sala"]);
+        $tipo_sala = htmlspecialchars($_POST["tipo_sala"]);
+
+        $sqlINSSalas = "INSERT INTO tbl_salas (nombre_sala, tipo_sala) VALUES (:nombre_sala, :tipo_sala);";
+        $stmt = $pdo->prepare($sqlINSSalas);
+        $stmt->bindParam(':nombre_sala', $nombre_sala);
+        $stmt->bindParam(':tipo_sala', $tipo_sala);
+        $stmt->execute();
+
+        header("Location: ../Paginas/recursos.php?exito=crearSala");
+        exit();
+    } catch (PDOException $e) {
+        echo "Error al filtrar: " . $e->getMessage();
+        die();
+    }
 }
 
+// Editar Recurso
+if(isset($_POST["edit_recurso"])){
+    try {
+        $id_recurso = htmlspecialchars($_POST["id_recurso"]);
+        $nombre_recurso = htmlspecialchars($_POST["nombre_recurso"]);
+        $tipo_recurso = htmlspecialchars($_POST["tipo_recurso"]);
+        $id_sala = !empty($_POST["id_sala"]) ? htmlspecialchars($_POST["id_sala"]) : null;
 
+        $sqlUPDRecurso = "UPDATE tbl_recursos 
+                          SET nombre_recurso = :nombre_recurso, tipo_recurso = :tipo_recurso, id_sala = :id_sala 
+                          WHERE id_recurso = :id_recurso";
+        $stmt = $pdo->prepare($sqlUPDRecurso);
+        $stmt->bindParam(':nombre_recurso', $nombre_recurso);
+        $stmt->bindParam(':tipo_recurso', $tipo_recurso);
+        $stmt->bindParam(':id_sala', $id_sala, PDO::PARAM_INT);
+        $stmt->bindParam(':id_recurso', $id_recurso, PDO::PARAM_INT);
+        $stmt->execute();
+
+        header("Location: ../Paginas/recursos.php?exito=edit_recurso");
+        exit();
+    } catch (PDOException $e) {
+        echo "Error al editar el recurso: " . $e->getMessage();
+        die();
+    }
+}
+
+// Crear Recurso
+if(isset($_POST["crear_sala"])){
+    try{
+        $nombre_recurso = htmlspecialchars($_POST["nombre_sala"]);
+        $tipo_recurso = htmlspecialchars($_POST["tipo_sala"]);
+        $id_sala = !empty($_POST["id_sala"]) ? htmlspecialchars($_POST["id_sala"]) : null;
+        $id_padre = !empty($_POST["id_sala"]) ? htmlspecialchars($_POST["id_sala"]) : null;
+
+        $sqlINSSalas = "INSERT INTO tbl_recursos (nombre_recurso, tipo_recurso, id_padre, id_sala) VALUES (:nombre_recurso, :tipo_recurso, :id_padre, :id_sala);";
+        $stmt = $pdo->prepare($sqlINSSalas);
+        $stmt->bindParam(':nombre_recurso', $nombre_recurso);
+        $stmt->bindParam(':tipo_recurso', $tipo_recurso);
+        $stmt->bindParam(':id_padre', $id_padre);
+        $stmt->bindParam(':id_sala', $id_sala);
+        $stmt->execute();
+
+        header("Location: ../Paginas/recursos.php?exito=crearRecurso");
+        exit();
+    } catch (PDOException $e) {
+        echo "Error al filtrar: " . $e->getMessage();
+        die();
+    }
+}
 
 ?>

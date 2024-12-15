@@ -71,7 +71,6 @@ try {
     </header>
     <h1 class="text-center">Gestión de Usuarios</h1>
 
-    <!-- Formulario de Búsqueda -->
     <form method="GET" class="row mb-3">
         <div class="col-md-6">
             <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o username" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
@@ -91,7 +90,6 @@ try {
         </div>
     </form>
 
-    <!-- Tabla de Usuarios -->
     <table class="table table-bordered table-hover">
         <thead class="table-light">
             <tr>
@@ -100,7 +98,7 @@ try {
                 <th>Apellido</th>
                 <th>Username</th>
                 <th>Rol</th>
-                <th>Acciones</th> <!-- Encabezado claro para los botones -->
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -124,7 +122,7 @@ try {
         <?php } ?>
         </tbody>
     </table>
-    <a href="../Paginas/crear.php?crear=si">
+    <a href="../Paginas/crear.php?crear=users">
         <button type="button" class="btn btn-secondary">CREAR</button>
     </a>
 </body>

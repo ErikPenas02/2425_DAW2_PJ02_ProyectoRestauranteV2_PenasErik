@@ -8,10 +8,11 @@ if(isset($_SESSION["rolAct"]) && $_SESSION["rolAct"] !== 1){
     exit();
 }
 
-if(!isset($_GET["crear"]) && isset($_GET["crear"]) === "si"){
+if(!isset($_GET["crear"])){
     header("Location: ./users.php");
     exit();
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,7 +27,7 @@ if(!isset($_GET["crear"]) && isset($_GET["crear"]) === "si"){
 <body>
 <?php
 
-if(isset($_GET["crear"])){
+if(isset($_GET["crear"]) && $_GET["crear"] === "users"){
     try{
         $sqlRoles = "SELECT * FROM tbl_roles";
         $stmt = $pdo->prepare($sqlRoles);
@@ -96,7 +97,94 @@ if(isset($_GET["crear"])){
 
 <?php
 }
+
+if (isset($_GET["crear"]) && $_GET["crear"] === "salas") {
+    ?>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Crear Sala</h2>
+        <form action="../Procesos/procesoCrud.php" method="POST" class="p-4 border rounded bg-light">
+            <div class="mb-3">
+                <label for="nombre_sala" class="form-label">Nombre de la Sala</label>
+                <input type="text" class="form-control" id="nombre_sala" name="nombre_sala" required>
+            </div>
+            <div class="mb-3">
+                <label for="tipo_sala" class="form-label">Tipo de Sala</label>
+                <select class="form-select" id="tipo_sala" name="tipo_sala" required>
+                    <option value="Comedor">Comedor</option>
+                    <option value="Terraza">Terraza</option>
+                    <option value="VIP">VIP</option>
+                </select>
+            </div>
+            <div class="text-center">
+                <button type="submit" name="crear_sala" class="btn btn-primary">Guardar Sala</button>
+                <a href="./recursos.php"><button type="button" class="btn btn-outline-danger">Cancelar</button></a>
+            </div>
+        </form>
+    </div>
+    <?php
+}
+
+if (isset($_GET["crear"]) && $_GET["crear"] === "recursos") {
+    try {
+        $sqlSalas = "SELECT id_sala, nombre_sala FROM tbl_salas";
+        $stmt = $pdo->prepare($sqlSalas);
+        $stmt->execute();
+        $salas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sqlPadres = "SELECT * FROM tbl_recursos WHERE id_padre IS NOT NULL";
+        $stmt = $pdo->prepare($sqlPadres);
+        $stmt->execute();
+        $padres = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        echo "Error al encontrar datos de las salas: " . $e->getMessage();
+        die();
+    }
+    ?>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Crear Recurso</h2>
+        <form action="../Procesos/procesoCrud.php" method="POST" class="p-4 border rounded bg-light">
+            <div class="mb-3">
+                <label for="nombre_recurso" class="form-label">Nombre del Recurso</label>
+                <input type="text" class="form-control" id="nombre_recurso" name="nombre_recurso" required>
+            </div>
+            <div class="mb-3">
+                <label for="tipo_recurso" class="form-label">Tipo de Recurso</label>
+                <select class="form-select" id="tipo_recurso" name="tipo_recurso" required>
+                    <option value="Mesa">Mesa</option>
+                    <option value="Silla">Silla</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="id_sala" class="form-label">Asignar a Sala (opcional)</label>
+                <select class="form-select" id="id_sala" name="id_sala">
+                    <option value="">-- Ninguna --</option>
+                    <?php
+                    foreach ($salas as $sala) {
+                        echo '<option value="' . $sala["id_sala"] . '">' . htmlspecialchars($sala["nombre_sala"]) . '</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="id_padre" class="form-label">Asignar a Sala (opcional)</label>
+                <select class="form-select" id="id_padre" name="id_padre">
+                    <option value="">-- Ninguna --</option>
+                    <?php
+                    foreach ($padres as $padre) {
+                        echo '<option value="' . $padre["id_recurso"] . '">' . htmlspecialchars($padre["nombre_recurso"]) . '</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+            <div class="text-center">
+                <button type="submit" name="crear_recurso" class="btn btn-primary">Guardar Recurso</button>
+                <a href="./recursos.php"><button type="button" class="btn btn-outline-danger">Cancelar</button></a>
+            </div>
+        </form>
+    </div>
+    <?php
+}
 ?>
-    
 </body>
 </html>
